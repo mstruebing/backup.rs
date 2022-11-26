@@ -1,0 +1,65 @@
+name: Release
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-unknown-linux-gnu
+          mv target/x86_64-unknown-linux-gnu/release/back ./back
+          chmod +x back
+          tar -czf back-linux-x86_64.tar.gz back
+          rm back
+          rustup target add x86_64-unknown-linux-musl
+          cargo build --release --target x86_64-unknown-linux-musl
+          mv target/x86_64-unknown-linux-musl/release/back ./back
+          chmod +x back
+          tar -czf back-alpine-x86_64.tar.gz back
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: back-*
+          draft: true
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-darwin:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-apple-darwin
+          mv target/x86_64-apple-darwin/release/back ./back
+          chmod +x back
+          tar -czf back-darwin-x86_64.tar.gz back
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: back-*
+          draft: true
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-crate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build and publish to crates.io
+        run: |
+          cargo login ${{ secrets.CRATES_TOKEN }}
+          cargo publish
