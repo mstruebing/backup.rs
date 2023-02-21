@@ -1,3 +1,3 @@
 clean:
-	rm -rf ~/.config/backup
-	rm -rf ~/.cache/backup
+	rm -rf ~/.config/sback
+	rm -rf ~/.cache/sback

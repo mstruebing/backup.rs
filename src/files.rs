@@ -5,15 +5,20 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-// TODO: Remove files which are already in a directory???
-//  TODO: Tests
-// TODO: Own Errors
-
 pub struct Files {
     pub config_path: PathBuf,
 }
 
 impl Files {
+    pub fn list(&self) -> Result<(), ()> {
+        let file_list = self.get()?;
+        for file in file_list {
+            println!("{}", file.display());
+        }
+
+        Ok(())
+    }
+
     pub fn get(&self) -> Result<Vec<PathBuf>, ()> {
         let config_string = fs::read_to_string(&self.config_path).unwrap_or_else(|_| {
             panic!(
@@ -46,8 +51,6 @@ impl Files {
         Ok(existing_files)
     }
 
-    // TODO: Write a function which is capable of receiving a vector
-    // to reduce writes
     pub fn add(&self, path: &Path) -> Result<(), ()> {
         let mut file = OpenOptions::new()
             .write(true)
@@ -55,14 +58,17 @@ impl Files {
             .open(&self.config_path)
             .unwrap();
 
-        writeln!(file, "{}", path.display()).unwrap();
+        writeln!(file, "{}", std::fs::canonicalize(path).unwrap().display()).unwrap();
 
         Ok(())
     }
 
     pub fn remove(&self, path: &PathBuf) -> Result<(), ()> {
         let files = self.get()?;
-        let files_without: Vec<PathBuf> = files.into_iter().filter(|f| f != path).collect();
+        let files_without: Vec<PathBuf> = files
+            .into_iter()
+            .filter(|f| f != &std::fs::canonicalize(path).unwrap())
+            .collect();
         self.write_file(files_without)
     }
 
@@ -84,35 +90,4 @@ impl Files {
 
         Ok(())
     }
-}
-
-#[cfg(test)]
-mod tests {
-    // use super::Files;
-    // use std::env;
-    // use std::fs::File;
-    // use std::path::PathBuf;
-
-    // fn init() -> String {
-    //     let mut path = env::temp_dir();
-    //     path.push("files");
-    //     File::create(&path).unwrap();
-    //     path.to_str().unwrap().to_owned()
-    // }
-
-    // #[test]
-    // fn test_add() {
-    //     let path = init();
-    //     let files = Files::new(&path);
-    //     assert_eq!(files.get().unwrap(), Vec::<PathBuf>::new());
-
-    //     files.add(&PathBuf::from("blubber")).unwrap();
-    //     assert_eq!(files.get().unwrap(), vec![PathBuf::from("blubber")]);
-
-    //     files.add(&PathBuf::from("bam")).unwrap();
-    //     assert_eq!(
-    //         files.get().unwrap(),
-    //         vec![PathBuf::from("blubber"), PathBuf::from("bam")]
-    //     );
-    // }
 }

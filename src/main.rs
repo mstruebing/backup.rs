@@ -16,37 +16,53 @@ fn cli() -> Command<'static> {
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
         .subcommand(Command::new("run").about("Executes the backup"))
-        .subcommand(Command::new("size").about("Calculates the size of the backup"))
         .subcommand(
             Command::new("files")
                 .args_conflicts_with_subcommands(true)
                 .about("Subcommands for files")
                 .subcommand(
-                    Command::new("add").arg_required_else_help(true).arg(
-                        arg!(<PATH>  "Stuff to add").value_parser(clap::value_parser!(PathBuf)),
-                    ),
+                    Command::new("add")
+                        .about("Add files")
+                        .arg_required_else_help(true)
+                        .arg(
+                            arg!(<PATH>  "Path of the file to add")
+                                .value_parser(clap::value_parser!(PathBuf)),
+                        ),
                 )
-                .subcommand(Command::new("remove").arg_required_else_help(true).arg(
-                    arg!(<PATH>  "Stuff to remove").value_parser(clap::value_parser!(PathBuf)),
-                ))
-                .subcommand(Command::new("list"))
-                .subcommand(Command::new("clean")),
+                .subcommand(
+                    Command::new("remove")
+                        .about("Remove files")
+                        .arg_required_else_help(true)
+                        .arg(
+                            arg!(<PATH>  "Path of the file to remove")
+                                .value_parser(clap::value_parser!(PathBuf)),
+                        ),
+                )
+                .subcommand(Command::new("list").about("Lists all files"))
+                .subcommand(Command::new("clean").about("Sort files and removes duplicates")),
         )
         .subcommand(
             Command::new("remote")
                 .args_conflicts_with_subcommands(true)
                 .about("Subcommands for remotes")
                 .subcommand(
-                    Command::new("add").arg_required_else_help(true).arg(
-                        arg!(<String>  "Stuff to add").value_parser(clap::value_parser!(String)),
-                    ),
+                    Command::new("add")
+                        .about(
+                            "Add a remote in an rsync compatible format i.e. `<user>@<host>:<path>`",
+                        )
+                        .arg_required_else_help(true)
+                        .arg(
+                            arg!(<String>  "Stuff to add")
+                                .value_parser(clap::value_parser!(String)),
+                        ),
                 )
                 .subcommand(
                     Command::new("remove")
+                    .about("Remove a remote")
                         .arg_required_else_help(true)
                         .arg(arg!(<REMOTE> "The remote to target")),
                 )
-                .subcommand(Command::new("list")),
+                .subcommand(Command::new("list").about("List remotes")),
         )
 }
 
@@ -68,17 +84,11 @@ fn main() -> Result<(), ()> {
             archive::create(files.get_only_existing().unwrap(), config.cache.clone())?;
             remotes.transfer(config.cache)?
         }
-        Some(("size", _)) => {
-            println!("Print size");
-        }
         Some(("files", sub_matches)) => {
             let files_command = sub_matches.subcommand().unwrap_or(("list", sub_matches));
             match files_command {
                 ("list", _sub_matches) => {
-                    let file_list = files.get()?;
-                    for file in file_list {
-                        println!("{}", file.display());
-                    }
+                    files.list()?;
                 }
                 ("add", sub_matches) => {
                     let paths = sub_matches
@@ -118,7 +128,7 @@ fn main() -> Result<(), ()> {
             let remote_command = sub_matches.subcommand().unwrap_or(("list", sub_matches));
             match remote_command {
                 ("list", _sub_matches) => {
-                    println!("List remotes");
+                    remotes.list();
                 }
                 ("add", sub_matches) => {
                     let r = sub_matches.get_one::<String>("String").unwrap();

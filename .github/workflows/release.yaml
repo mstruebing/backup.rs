@@ -15,19 +15,19 @@ jobs:
       - name: Build
         run: |
           cargo build --release --target x86_64-unknown-linux-gnu
-          mv target/x86_64-unknown-linux-gnu/release/back ./back
-          chmod +x back
-          tar -czf back-linux-x86_64.tar.gz back
-          rm back
+          mv target/x86_64-unknown-linux-gnu/release/sback ./sback
+          chmod +x sback
+          tar -czf sback-linux-x86_64.tar.gz sback
+          rm sback
           rustup target add x86_64-unknown-linux-musl
           cargo build --release --target x86_64-unknown-linux-musl
-          mv target/x86_64-unknown-linux-musl/release/back ./back
-          chmod +x back
-          tar -czf back-alpine-x86_64.tar.gz back
+          mv target/x86_64-unknown-linux-musl/release/sback ./sback
+          chmod +x sback
+          tar -czf sback-alpine-x86_64.tar.gz sback
       - name: Publish release
         uses: softprops/action-gh-release@v1
         with:
-          files: back-*
+          files: sback-*
           draft: true
           body_path: CHANGELOG.md
         env:
@@ -43,13 +43,13 @@ jobs:
       - name: Build
         run: |
           cargo build --release --target x86_64-apple-darwin
-          mv target/x86_64-apple-darwin/release/back ./back
-          chmod +x back
-          tar -czf back-darwin-x86_64.tar.gz back
+          mv target/x86_64-apple-darwin/release/sback ./sback
+          chmod +x sback
+          tar -czf sback-darwin-x86_64.tar.gz sback
       - name: Publish release
         uses: softprops/action-gh-release@v1
         with:
-          files: back-*
+          files: sback-*
           draft: true
           body_path: CHANGELOG.md
         env:
