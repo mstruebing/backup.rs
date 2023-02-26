@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/mstruebing/backup.rs/tree/HEAD)
+## [0.2.0](https://github.com/mstruebing/backup.rs/tree/0.2.0) (2023-02-26)
 
 **Closed issues:**
 
