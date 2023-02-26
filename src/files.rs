@@ -5,15 +5,18 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-pub struct Files {
+use crate::logger::Logger;
+
+pub struct Files<'a> {
     pub config_path: PathBuf,
+    pub logger: &'a Logger,
 }
 
-impl Files {
+impl Files<'_> {
     pub fn list(&self) -> Result<(), ()> {
         let file_list = self.get()?;
         for file in file_list {
-            println!("{}", file.display());
+            self.logger.log(&format!("{}", file.display()))
         }
 
         Ok(())
@@ -52,6 +55,7 @@ impl Files {
     }
 
     pub fn add(&self, path: &Path) -> Result<(), ()> {
+        self.logger.log(&format!("Adding file {}", path.display()));
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
@@ -64,6 +68,8 @@ impl Files {
     }
 
     pub fn remove(&self, path: &PathBuf) -> Result<(), ()> {
+        self.logger
+            .log(&format!("Removing file {}", path.display()));
         let files = self.get()?;
         let files_without: Vec<PathBuf> = files
             .into_iter()

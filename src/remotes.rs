@@ -1,16 +1,19 @@
 use std::fs;
 use std::fs::OpenOptions;
-use std::process::Command;
-
 use std::io::Write;
 use std::path::PathBuf;
+use std::process::Command;
 
-pub struct Remotes {
+use crate::logger::Logger;
+
+pub struct Remotes<'a> {
     pub config_path: PathBuf,
+    pub logger: &'a Logger,
 }
 
-impl Remotes {
+impl Remotes<'_> {
     pub fn add(&self, remote_string: String) -> Result<(), ()> {
+        self.logger.log(&format!("Adding remote {}", remote_string));
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
@@ -25,7 +28,7 @@ impl Remotes {
     pub fn list(&self) {
         let remotes = self.get_remotes();
         for remote in remotes {
-            println!("{}", remote);
+            self.logger.log(&remote);
         }
     }
 
@@ -34,7 +37,8 @@ impl Remotes {
         let string_file = &file.into_os_string().into_string().unwrap();
 
         for remote in remotes {
-            println!("Copying to remote: {}", remote);
+            self.logger
+                .log(&format!("Transfering to remote: {}", remote));
             let cmd = Command::new("rsync")
                 .args(["-azvhP", string_file, &remote])
                 .spawn()
@@ -44,10 +48,14 @@ impl Remotes {
 
             match output {
                 Ok(output) => {
-                    println!("output: {:?}", output);
+                    self.logger.log(&format!("Rsync output: {:#?} ", output));
+                    self.logger
+                        .log(&format!("Transer to remote: {} successful", remote));
                 }
                 Err(error) => {
-                    println!("error: {:?}", error);
+                    self.logger.debug(&format!("Rsync error: {:#?} ", error));
+                    self.logger
+                        .log(&format!("Transer to remote: {} failed", remote));
                 }
             }
         }

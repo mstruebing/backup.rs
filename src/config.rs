@@ -1,5 +1,8 @@
 use std::path::PathBuf;
 
+use crate::logger::Logger;
+
+#[derive(Debug)]
 pub struct Config {
     pub files: PathBuf,
     pub cache: PathBuf,
@@ -7,7 +10,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(prefix: &str) -> Config {
+    pub fn new(prefix: &str, logger: &Logger) -> Config {
         let xdg_dirs = xdg::BaseDirectories::with_prefix(prefix).unwrap();
 
         let files = xdg_dirs
@@ -22,8 +25,16 @@ impl Config {
             .place_cache_file("archive.tar.gz")
             .expect("cannot create cache directory");
 
+        logger.debug(&format!("Creating file if not exists: {}", files.display()));
         create_file(files.to_owned()).ok();
+
+        logger.debug(&format!(
+            "Creating file if not exists: {}",
+            remotes.display()
+        ));
         create_file(remotes.to_owned()).ok();
+
+        logger.debug(&format!("Creating file if not exists: {}", cache.display()));
         create_file(cache.to_owned()).ok();
 
         Config {

@@ -1,10 +1,11 @@
-use clap::{arg, Command};
+use clap::{arg, Arg, Command};
 use config::Config;
 use std::path::PathBuf;
 
 mod archive;
 mod config;
 mod files;
+mod logger;
 mod remotes;
 
 extern crate xdg;
@@ -15,6 +16,8 @@ fn cli() -> Command<'static> {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
+        .arg(Arg::new("debug").long("debug").short('d').help("Run with debug output"))
+        .arg(Arg::new("verbose").long("verbose").short('v').help("Run with verbose output"))
         .subcommand(Command::new("run").about("Executes the backup"))
         .subcommand(
             Command::new("files")
@@ -67,21 +70,33 @@ fn cli() -> Command<'static> {
 }
 
 fn main() -> Result<(), ()> {
-    let config = Config::new(env!("CARGO_PKG_NAME"));
+    let matches = cli().get_matches();
 
+    let logger = logger::Logger {
+        verbose: matches.contains_id("verbose"),
+        debug: matches.contains_id("debug"),
+    };
+
+    let config = Config::new(env!("CARGO_PKG_NAME"), &logger);
     let files = files::Files {
-        config_path: config.files,
+        config_path: config.files.clone(),
+        logger: &logger,
     };
     let remotes = remotes::Remotes {
-        config_path: config.remotes,
+        config_path: config.remotes.clone(),
+        logger: &logger,
     };
 
-    let matches = cli().get_matches();
+    logger.debug(&format!("matches: {:#?}", matches));
+    logger.debug(&format!("config: {:#?}", config));
 
     match matches.subcommand() {
         Some(("run", _)) => {
-            println!("Run backup");
-            archive::create(files.get_only_existing().unwrap(), config.cache.clone())?;
+            archive::create(
+                files.get_only_existing().unwrap(),
+                config.cache.clone(),
+                &logger,
+            )?;
             remotes.transfer(config.cache)?
         }
         Some(("files", sub_matches)) => {
@@ -99,7 +114,6 @@ fn main() -> Result<(), ()> {
 
                     for path in paths {
                         files.add(path)?;
-                        println!("File {} added", path.display())
                     }
 
                     files.clean()?;
@@ -113,7 +127,6 @@ fn main() -> Result<(), ()> {
 
                     for path in paths {
                         files.remove(path)?;
-                        println!("File {} removed", path.display())
                     }
                 }
                 ("clean", _sub_matches) => {
@@ -132,13 +145,12 @@ fn main() -> Result<(), ()> {
                 }
                 ("add", sub_matches) => {
                     let r = sub_matches.get_one::<String>("String").unwrap();
-
-                    println!("Adding remote {:?}", r);
                     remotes.add(r.to_owned()).unwrap();
                 }
                 ("remove", sub_matches) => {
                     let remote = sub_matches.get_one::<String>("REMOTE").expect("required");
-                    println!("Removing remote {:?}", remote);
+                    // TODO: implement
+                    logger.log(&format!("Removing remote {:?}", remote))
                 }
                 (name, _) => {
                     unreachable!("Unsupported subcommand `{}`", name)
