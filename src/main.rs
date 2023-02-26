@@ -124,7 +124,7 @@ fn main() -> Result<(), ()> {
                 }
             }
         }
-        Some(("remote", sub_matches)) => {
+        Some(("remotes", sub_matches)) => {
             let remote_command = sub_matches.subcommand().unwrap_or(("list", sub_matches));
             match remote_command {
                 ("list", _sub_matches) => {
