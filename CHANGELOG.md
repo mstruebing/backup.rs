@@ -4,6 +4,12 @@
 
 **Closed issues:**
 
+- provide more output what is happening [\#2](https://github.com/mstruebing/backup.rs/issues/2)
+
+## [0.1.0](https://github.com/mstruebing/backup.rs/tree/0.1.0) (2023-02-21)
+
+**Closed issues:**
+
 - `back add .` is added as an actual `.` [\#1](https://github.com/mstruebing/backup.rs/issues/1)
 
 
