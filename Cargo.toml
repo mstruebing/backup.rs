@@ -4,8 +4,8 @@ version = "0.2.0"
 edition = "2021"
 authors = ["Max Strübing <mxstrbng@gmail.com>"]
 description = "A CLI tool to manage and run your backups."
-repository = "https://github.com/mstruebing/backup.rs"
-homepage = "https://github.com/mstruebing/backup.rs"
+repository = "https://github.com/mstruebing/sback"
+homepage = "https://github.com/mstruebing/sback"
 license = "MIT"
 categories = ["command-line-utilities", "backup"]
 

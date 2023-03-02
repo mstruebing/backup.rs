@@ -1,4 +1,4 @@
-# backup.rs
+# sback
 
 A CLI tool to manage and run your backups.
 
@@ -41,7 +41,7 @@ Clone the repository and run `cargo build --release` and you should find the bin
 
 ## Release Page
 
-Or grab a binary from the [release page](https://github.com/mstruebing/backup.rs/releases)
+Or grab a binary from the [release page](https://github.com/mstruebing/sback/releases)
 
 # Contribution
 
