@@ -145,12 +145,11 @@ fn main() -> Result<(), ()> {
                 }
                 ("add", sub_matches) => {
                     let r = sub_matches.get_one::<String>("String").unwrap();
-                    remotes.add(r.to_owned()).unwrap();
+                    remotes.add(r).unwrap();
                 }
                 ("remove", sub_matches) => {
                     let remote = sub_matches.get_one::<String>("REMOTE").expect("required");
-                    // TODO: implement
-                    logger.log(&format!("Removing remote {:?}", remote))
+                    remotes.remove(remote)?;
                 }
                 (name, _) => {
                     unreachable!("Unsupported subcommand `{}`", name)
