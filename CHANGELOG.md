@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased](https://github.com/mstruebing/sback/tree/HEAD)
+
+**Closed issues:**
+
+- Consider renaming the repository to `sback` [\#8](https://github.com/mstruebing/sback/issues/8)
+
 ## [0.3.0](https://github.com/mstruebing/sback/tree/0.3.0) (2023-03-02)
 
 **Closed issues:**
